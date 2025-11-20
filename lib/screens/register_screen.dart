@@ -6,41 +6,75 @@ class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  _RegisterScreenState createState() => _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
-  final formKey = GlobalKey<FormState>();
-  final user = UserModel(
-    email: '', password: '', name: '', age: 0, course: '', college: '', semester: 0,
-  );
+  final _name = TextEditingController();
+  final _email = TextEditingController();
+  final _pass = TextEditingController();
+  final _university = TextEditingController();
+  final _course = TextEditingController();
+
+  String _error = '';
+
+  void _register() {
+    final name = _name.text.trim();
+    final email = _email.text.trim();
+    final pass = _pass.text.trim();
+    final university = _university.text.trim();
+    final course = _course.text.trim();
+
+    if (name.isEmpty || email.isEmpty || pass.isEmpty) {
+      setState(() => _error = 'Preencha nome, email e senha.');
+      return;
+    }
+
+    if (FakeDatabase.findUser(email) != null) {
+      setState(() => _error = 'E-mail já cadastrado.');
+      return;
+    }
+
+    final user = UserModel(
+      email: email,
+      password: pass,
+      name: name,
+      university: university,
+      course: course,
+    );
+
+    FakeDatabase.users.add(user);
+    // auto login
+    FakeDatabase.currentUser = user;
+    Navigator.pushReplacementNamed(context, '/feed');
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Cadastrar")),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Form(
-          key: formKey,
-          child: ListView(
-            children: [
-              TextFormField(decoration: const InputDecoration(labelText: "Nome"), onChanged: (v) => user.name = v),
-              TextFormField(decoration: const InputDecoration(labelText: "Idade"), keyboardType: TextInputType.number, onChanged: (v) => user.age = int.tryParse(v) ?? 0),
-              TextFormField(decoration: const InputDecoration(labelText: "Curso"), onChanged: (v) => user.course = v),
-              TextFormField(decoration: const InputDecoration(labelText: "Faculdade"), onChanged: (v) => user.college = v),
-              TextFormField(decoration: const InputDecoration(labelText: "Semestre"), keyboardType: TextInputType.number, onChanged: (v) => user.semester = int.tryParse(v) ?? 0),
-              TextFormField(decoration: const InputDecoration(labelText: "E-mail"), onChanged: (v) => user.email = v),
-              TextFormField(decoration: const InputDecoration(labelText: "Senha"), obscureText: true, onChanged: (v) => user.password = v),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  FakeDatabase.users.add(user);
-                  Navigator.pop(context);
-                },
-                child: const Text("Cadastrar"),
-              )
-            ],
+      appBar: AppBar(title: const Text('Cadastrar')),
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
+            child: Column(
+              children: [
+                TextField(controller: _name, decoration: const InputDecoration(labelText: 'Nome')),
+                const SizedBox(height: 8),
+                TextField(controller: _university, decoration: const InputDecoration(labelText: 'Universidade')),
+                const SizedBox(height: 8),
+                TextField(controller: _course, decoration: const InputDecoration(labelText: 'Curso')),
+                const SizedBox(height: 8),
+                TextField(controller: _email, decoration: const InputDecoration(labelText: 'E-mail')),
+                const SizedBox(height: 8),
+                TextField(controller: _pass, obscureText: true, decoration: const InputDecoration(labelText: 'Senha')),
+                const SizedBox(height: 12),
+                if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: _register, child: const Text('Registrar e entrar')),
+              ],
+            ),
           ),
         ),
       ),

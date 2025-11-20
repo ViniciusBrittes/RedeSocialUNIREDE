@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import '../models/user_model.dart';
 import '../data/fakedatabase.dart';
-import 'feed_screen.dart';
-import 'register_screen.dart';
+import '../models/user_model.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,125 +10,61 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
-  String errorMessage = "";
+  final _email = TextEditingController();
+  final _pass = TextEditingController();
+  String _error = '';
 
-  void login() {
-    final email = emailController.text.trim();
-    final pass = passwordController.text.trim();
+  void _login() {
+    final email = _email.text.trim();
+    final pass = _pass.text.trim();
 
     if (email.isEmpty || pass.isEmpty) {
-      setState(() => errorMessage = "Preencha todos os campos.");
+      setState(() => _error = 'Preencha e-mail e senha.');
       return;
     }
 
-    UserModel? user;
-
-    try {
-      user = FakeDatabase.users.firstWhere(
-        (u) => u.email == email && u.password == pass,
-      );
-    } catch (e) {
-      user = null;
-    }
-
-    if (user != null) {
+    final user = FakeDatabase.findUser(email);
+    if (user != null && user.password == pass) {
       FakeDatabase.currentUser = user;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => FeedScreen()),
-      );
+      Navigator.pushReplacementNamed(context, '/feed');
     } else {
-      setState(() => errorMessage = "Usuário ou senha incorretos.");
+      setState(() => _error = 'Usuário ou senha incorretos.');
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
+      appBar: AppBar(title: const Text('Login')),
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: SingleChildScrollView(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 600),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Text(
-                  "RedeSocialPOO",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 40),
+                const Text('RedeSocialPOO', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 24),
                 TextField(
-                  controller: emailController,
-                  decoration: const InputDecoration(
-                    labelText: "E-mail",
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
+                  controller: _email,
+                  decoration: const InputDecoration(labelText: 'E-mail'),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 12),
                 TextField(
-                  controller: passwordController,
+                  controller: _pass,
                   obscureText: true,
-                  decoration: const InputDecoration(
-                    labelText: "Senha",
-                    labelStyle: TextStyle(color: Colors.white70),
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white24),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.white),
-                    ),
-                  ),
-                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(labelText: 'Senha'),
                 ),
-                const SizedBox(height: 16),
-                if (errorMessage.isNotEmpty)
-                  Text(
-                    errorMessage,
-                    style: const TextStyle(color: Colors.redAccent),
-                  ),
-                const SizedBox(height: 20),
-                ElevatedButton(
-                  onPressed: login,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blueAccent,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 60, vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                  child: const Text(
-                    "Entrar",
-                    style: TextStyle(fontSize: 18, color: Colors.white),
-                  ),
-                ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
+                if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: Colors.red)),
+                const SizedBox(height: 12),
+                ElevatedButton(onPressed: _login, child: const Text('Entrar')),
+                const SizedBox(height: 8),
                 TextButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (_) => RegisterScreen()),
-                    );
+                    Navigator.pushNamed(context, '/register');
                   },
-                  child: const Text(
-                    "Criar conta",
-                    style: TextStyle(color: Colors.blueAccent, fontSize: 16),
-                  ),
+                  child: const Text('Criar conta'),
                 ),
               ],
             ),
