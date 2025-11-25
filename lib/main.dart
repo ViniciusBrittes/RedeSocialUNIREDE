@@ -3,10 +3,19 @@ import 'screens/login_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/feed_screen.dart';
 import 'screens/profile_screen.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const RedeSocialApp());
 }
+
+
+
 
 class RedeSocialApp extends StatelessWidget {
   const RedeSocialApp({super.key});
@@ -16,7 +25,7 @@ class RedeSocialApp extends StatelessWidget {
     return MaterialApp(
       title: 'RedeSocialPOO',
       theme: ThemeData.dark().copyWith(
-        colorScheme: ColorScheme.dark(
+        colorScheme: const ColorScheme.dark(
           primary: Colors.indigoAccent,
           secondary: Colors.tealAccent,
         ),

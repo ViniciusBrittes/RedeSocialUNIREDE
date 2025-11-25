@@ -1,11 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart';
+//import 'package:file_picker/file_picker.dart';
 import 'package:open_file/open_file.dart';
 import 'package:rede_social_poo/data/fakedatabase.dart';
 import '../models/post_model.dart';
-import '../models/user_model.dart';
-import 'profile_screen.dart';
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -22,10 +20,10 @@ class _FeedScreenState extends State<FeedScreen> {
 
   String _courseFilter = 'Todos';
   String _searchUser = '';
-
+/*
   // helper: pick image or pdf
   Future<void> _pickImage() async {
-    final result = await FilePicker.platform.pickFiles(type: FileType.image);
+    //final result = await FilePicker.platform.pickFiles(type: FileType.image);
     if (result != null && result.files.single.path != null) {
       setState(() {
         _selectedImagePath = result.files.single.path!;
@@ -40,7 +38,7 @@ class _FeedScreenState extends State<FeedScreen> {
         _selectedFilePath = result.files.single.path!;
       });
     }
-  }
+  }*/
 
   void _createPost() {
     final user = FakeDatabase.currentUser;
@@ -204,13 +202,13 @@ class _FeedScreenState extends State<FeedScreen> {
                     Row(
                       children: [
                         ElevatedButton.icon(
-                          onPressed: _pickImage,
+                          onPressed: null,
                           icon: const Icon(Icons.image),
                           label: const Text('Imagem'),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
-                          onPressed: _pickPdf,
+                          onPressed: null,
                           icon: const Icon(Icons.picture_as_pdf),
                           label: const Text('PDF'),
                         ),

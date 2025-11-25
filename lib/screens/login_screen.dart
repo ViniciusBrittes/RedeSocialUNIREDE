@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../data/fakedatabase.dart';
-import '../models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -14,7 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _pass = TextEditingController();
   String _error = '';
 
-  void _login() {
+  Future<void> _login() async {
     final email = _email.text.trim();
     final pass = _pass.text.trim();
 
@@ -23,14 +22,29 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
-    final user = FakeDatabase.findUser(email);
-    if (user != null && user.password == pass) {
-      FakeDatabase.currentUser = user;
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: pass,
+      );
+
+      // Se funcionou, vai pro feed
       Navigator.pushReplacementNamed(context, '/feed');
-    } else {
-      setState(() => _error = 'Usuário ou senha incorretos.');
+
+    } on FirebaseAuthException catch (e) {
+      setState(() {
+        if (e.code == 'user-not-found') {
+          _error = 'Usuário não encontrado.';
+        } else if (e.code == 'wrong-password') {
+          _error = 'Senha incorreta.';
+        } else {
+          _error = 'Erro: ${e.message}';
+        }
+      });
     }
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -43,27 +57,32 @@ class _LoginScreenState extends State<LoginScreen> {
             constraints: const BoxConstraints(maxWidth: 600),
             child: Column(
               children: [
-                const Text('RedeSocialPOO', style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+                const Text('RedeSocialPOO',
+                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
                 const SizedBox(height: 24),
+
                 TextField(
                   controller: _email,
                   decoration: const InputDecoration(labelText: 'E-mail'),
                 ),
                 const SizedBox(height: 12),
+
                 TextField(
                   controller: _pass,
                   obscureText: true,
                   decoration: const InputDecoration(labelText: 'Senha'),
                 ),
+
                 const SizedBox(height: 12),
-                if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: Colors.red)),
+                if (_error.isNotEmpty)
+                  Text(_error, style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 12),
+
                 ElevatedButton(onPressed: _login, child: const Text('Entrar')),
                 const SizedBox(height: 8),
+
                 TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/register');
-                  },
+                  onPressed: () => Navigator.pushNamed(context, '/register'),
                   child: const Text('Criar conta'),
                 ),
               ],

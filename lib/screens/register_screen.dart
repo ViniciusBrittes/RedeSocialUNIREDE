@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../data/fakedatabase.dart';
-import '../models/user_model.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -18,7 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   String _error = '';
 
-  void _register() {
+  Future<void> _register() async {
     final name = _name.text.trim();
     final email = _email.text.trim();
     final pass = _pass.text.trim();
@@ -30,23 +30,27 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    if (FakeDatabase.findUser(email) != null) {
-      setState(() => _error = 'E-mail já cadastrado.');
-      return;
+    try {
+      // 1️⃣ Criar usuário no Firebase Auth
+      final cred = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: pass);
+
+      final uid = cred.user!.uid;
+
+      // 2️⃣ Criar documento do usuário no Firestore
+      await FirebaseFirestore.instance.collection("users").doc(uid).set({
+        "name": name,
+        "email": email,
+        "university": university,
+        "course": course,
+        "createdAt": DateTime.now(),
+      });
+
+      // 3️⃣ Redirecionar
+      Navigator.pushReplacementNamed(context, '/feed');
+    } on FirebaseAuthException catch (e) {
+      setState(() => _error = e.message ?? "Erro ao registrar.");
     }
-
-    final user = UserModel(
-      email: email,
-      password: pass,
-      name: name,
-      university: university,
-      course: course,
-    );
-
-    FakeDatabase.users.add(user);
-    // auto login
-    FakeDatabase.currentUser = user;
-    Navigator.pushReplacementNamed(context, '/feed');
   }
 
   @override
@@ -72,7 +76,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(height: 12),
                 if (_error.isNotEmpty) Text(_error, style: const TextStyle(color: Colors.red)),
                 const SizedBox(height: 12),
-                ElevatedButton(onPressed: _register, child: const Text('Registrar e entrar')),
+                ElevatedButton(
+                  onPressed: _register,
+                  child: const Text('Registrar e entrar'),
+                ),
               ],
             ),
           ),

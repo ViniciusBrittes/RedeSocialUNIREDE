@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "544755421444",
+    "project_id": "redesocialpoo2025",
+    "storage_bucket": "redesocialpoo2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:544755421444:android:47bff696e5d05de76ac051",
+        "android_client_info": {
+          "package_name": "com.example.redesocial"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvVmAJtcVif2cuOIUZLXbJ0qRkeD5chqE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
