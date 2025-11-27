@@ -33,11 +33,11 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginWithGoogle() async {
   try {
     if (kIsWeb) {
-      // 🔥 Login Google para WEB
+      //  Login Google para WEB
       final provider = GoogleAuthProvider();
       await FirebaseAuth.instance.signInWithPopup(provider);
     } else {
-      // 🔥 Login Google para ANDROID / iOS
+      //  Login Google para ANDROID / iOS
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       if (googleUser == null) return;
 

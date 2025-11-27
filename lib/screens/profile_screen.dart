@@ -26,7 +26,7 @@ class ProfileScreen extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
 
-        // CORREÇÃO: Tratamento para usuários sem documento no banco
+        
         Map<String, dynamic>? data;
         if (snap.hasData && snap.data!.exists) {
           data = snap.data!.data() as Map<String, dynamic>;

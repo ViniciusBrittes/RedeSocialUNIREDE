@@ -1,9 +1,9 @@
-// lib/screens/feed_screen.dart
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// Removemos import dart:io e open_file pois não estavam sendo usados na lógica principal
-// Se precisar deles para outra coisa, pode manter.
+
+
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
@@ -34,7 +34,7 @@ class _FeedScreenState extends State<FeedScreen> {
         ? <String>[]
         : _hashtagCtrl.text.trim().split(' ').where((s) => s.startsWith('#')).toList();
 
-    // try to fetch user's profile data (name, course)
+
     final userDoc = await usersRef.doc(user.uid).get();
     final userMap = userDoc.data() ?? {};
     final authorName = (userMap['name'] as String?) ?? user.email?.split('@').first ?? 'Anon';
@@ -60,7 +60,7 @@ class _FeedScreenState extends State<FeedScreen> {
     setState(() {}); // refresh UI
   }
 
-  // Toggle like using a transaction (atomic). Prevent self-like.
+  // Toggle 
   Future<void> _toggleLike(DocumentSnapshot postSnap) async {
     final uid = _currentUser?.uid;
     if (uid == null) return;
@@ -87,7 +87,7 @@ class _FeedScreenState extends State<FeedScreen> {
     });
   }
 
-  // Add comment (push to comments array)
+  // comentario
   Future<void> _addComment(DocumentSnapshot postSnap) async {
     final uid = _currentUser?.uid;
     if (uid == null) return;
@@ -117,7 +117,7 @@ class _FeedScreenState extends State<FeedScreen> {
                   'authorId': uid,
                   'authorName': name,
                   'text': text,
-                  // CORREÇÃO AQUI: Timestamp.now() em vez de FieldValue.serverTimestamp()
+                  
                   'createdAt': Timestamp.now(),
                 };
                 await docRef.update({
@@ -190,7 +190,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
             const SizedBox(height: 8),
 
-            // Create post area
+            // Criar post
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(10),

@@ -31,13 +31,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     try {
-      // 1️⃣ Criar usuário no Firebase Auth
+      // Criar usuário no Firebase Auth
       final cred = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: pass);
 
       final uid = cred.user!.uid;
 
-      // 2️⃣ Criar documento do usuário no Firestore
+      // Criar documento do usuário no Firestore
       await FirebaseFirestore.instance.collection("users").doc(uid).set({
         "name": name,
         "email": email,
@@ -46,7 +46,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         "createdAt": DateTime.now(),
       });
 
-      // 3️⃣ Redirecionar
+      // Redirecionar
       Navigator.pushReplacementNamed(context, '/feed');
     } on FirebaseAuthException catch (e) {
       setState(() => _error = e.message ?? "Erro ao registrar.");
