@@ -2,12 +2,12 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:open_file/open_file.dart';
-import 'dart:io';
+// Removemos import dart:io e open_file pois não estavam sendo usados na lógica principal
+// Se precisar deles para outra coisa, pode manter.
 
 class FeedScreen extends StatefulWidget {
   const FeedScreen({super.key});
-
+  
   @override
   State<FeedScreen> createState() => _FeedScreenState();
 }
@@ -23,7 +23,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
   User? get _currentUser => FirebaseAuth.instance.currentUser;
 
-  // Create post: text + hashtags (no file picker here)
+  // Create post: text + hashtags
   Future<void> _createPost() async {
     final user = _currentUser;
     if (user == null) return;
@@ -68,7 +68,6 @@ class _FeedScreenState extends State<FeedScreen> {
     final postData = postSnap.data() as Map<String, dynamic>;
     final authorId = postData['authorId'] as String?;
     if (authorId != null && authorId == uid) {
-      // optional: show feedback
       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Você não pode curtir sua própria postagem.')));
       return;
     }
@@ -77,7 +76,7 @@ class _FeedScreenState extends State<FeedScreen> {
 
     await FirebaseFirestore.instance.runTransaction((tx) async {
       final freshSnap = await tx.get(docRef);
-      final fresh = freshSnap.data() as Map<String, dynamic>? ?? {};
+      final fresh = freshSnap.data() ?? {};
       final List likes = List.from(fresh['likes'] ?? []);
       if (likes.contains(uid)) {
         likes.remove(uid);
@@ -92,10 +91,16 @@ class _FeedScreenState extends State<FeedScreen> {
   Future<void> _addComment(DocumentSnapshot postSnap) async {
     final uid = _currentUser?.uid;
     if (uid == null) return;
+    
+    // Busca dados atualizados do usuário ou usa defaults
     final userDoc = await usersRef.doc(uid).get();
-    final name = (userDoc.data()?['name'] as String?) ?? _currentUser!.email!.split('@').first;
+    final userData = userDoc.data();
+    final name = (userData?['name'] as String?) ?? _currentUser!.email!.split('@').first;
 
     final ctrl = TextEditingController();
+    
+    if (!mounted) return;
+
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
@@ -112,13 +117,14 @@ class _FeedScreenState extends State<FeedScreen> {
                   'authorId': uid,
                   'authorName': name,
                   'text': text,
-                  'createdAt': FieldValue.serverTimestamp(),
+                  // CORREÇÃO AQUI: Timestamp.now() em vez de FieldValue.serverTimestamp()
+                  'createdAt': Timestamp.now(),
                 };
                 await docRef.update({
                   'comments': FieldValue.arrayUnion([comment])
                 });
               }
-              Navigator.pop(context);
+              if (context.mounted) Navigator.pop(context);
             },
             child: const Text('Comentar'),
           )
@@ -127,7 +133,7 @@ class _FeedScreenState extends State<FeedScreen> {
     );
   }
 
-  // Navigate to profile: pass uid as argument (ProfileScreen should read ModalRoute args)
+  // Navigate to profile
   void _openProfile(String uid) {
     Navigator.pushNamed(context, '/profile', arguments: uid);
   }
@@ -167,7 +173,6 @@ class _FeedScreenState extends State<FeedScreen> {
             // Controls: filter + search
             Row(
               children: [
-                // For simplicity, course filter is client-side; we load all posts and then filter
                 DropdownButton<String>(
                   value: _courseFilter,
                   items: const ['Todos'].map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
@@ -221,7 +226,6 @@ class _FeedScreenState extends State<FeedScreen> {
                   if (snap.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
                   final docs = snap.data!.docs;
 
-                  // client-side filtering by _searchUser or _courseFilter if needed
                   final filtered = docs.where((d) {
                     final data = d.data() as Map<String, dynamic>;
                     final authorName = (data['authorName'] as String?) ?? '';
@@ -267,7 +271,6 @@ class _FeedScreenState extends State<FeedScreen> {
                                     onSelected: (v) async {
                                       final uid = _currentUser?.uid;
                                       if (v == 'edit' && uid != null && uid == data['authorId']) {
-                                        // edit: show simple dialog to edit content
                                         final ctrl = TextEditingController(text: data['content'] ?? '');
                                         showDialog(context: context, builder: (_) => AlertDialog(
                                           title: const Text('Editar postagem'),
@@ -322,7 +325,6 @@ class _FeedScreenState extends State<FeedScreen> {
                                   dense: true,
                                   title: Text(c['authorName'] ?? 'Anon', style: const TextStyle(fontWeight: FontWeight.w600)),
                                   subtitle: Text(c['text'] ?? ''),
-                                  trailing: Text(''),
                                 ),
                             ],
                           ),
